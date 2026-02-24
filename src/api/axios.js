@@ -1,10 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://smarttechsolutions-springboot.onrender.com",
+  baseURL: "https://smarttechsolutions-backend.onrender.com",
 });
 
-// Automatically attach JWT token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
@@ -16,4 +15,3 @@ api.interceptors.request.use((config) => {
 });
 
 export default api;
-
