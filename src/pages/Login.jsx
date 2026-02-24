@@ -12,12 +12,14 @@ function Login() {
     setLoading(true);
 
     try {
-      // ✅ Updated: call Vercel serverless function to avoid CORS
+      
+
+
       const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password }),
+});
 
       if (!response.ok) {
         alert("Invalid credentials");
@@ -182,3 +184,4 @@ function Login() {
 }
 
 export default Login;
+
