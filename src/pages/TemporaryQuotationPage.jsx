@@ -37,7 +37,7 @@ const TemporaryQuotationPage = () => {
   useEffect(() => {
     const fetchComponents = async () => {
       try {
-        const response = await fetch("https://smarttechsolutions-backend.onrender.com/components", {
+        const response = await fetch("https://smarttechsolutions-springboot.onrender.com/components", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
@@ -620,5 +620,6 @@ return (
   </div>
 );
 };
+
 
 export default TemporaryQuotationPage;
