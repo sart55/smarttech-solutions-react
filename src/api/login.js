@@ -14,6 +14,8 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
+
+    // forward the backend response and status
     res.status(response.status).json(data);
   } catch (error) {
     console.error("API login error:", error);
