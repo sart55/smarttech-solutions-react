@@ -12,15 +12,12 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://smarttechsolutions-backend.onrender.com/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        }
-      );
-
+      
+const response = await fetch("/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password }),
+});
       if (!response.ok) {
         alert("Invalid credentials");
         setLoading(false);
@@ -184,3 +181,4 @@ function Login() {
 }
 
 export default Login;
+
