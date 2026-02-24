@@ -12,17 +12,18 @@ function Login() {
     setLoading(true);
 
     try {
-      
-const response = await fetch(
-  "https://smarttechsolutions-backend.onrender.com/auth/login",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  }
-);
+      const response = await fetch(
+        "https://smarttechsolutions-springboot.onrender.com/auth/login", // ✅ FIXED URL
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Login failed:", errorText);
         alert("Invalid credentials");
         setLoading(false);
         return;
@@ -77,7 +78,6 @@ const response = await fetch(
       </div>
 
       <style>{`
-        /* Wrapper */
         .login-wrapper {
           height: 100vh;
           display: flex;
@@ -87,7 +87,6 @@ const response = await fetch(
           padding: 20px;
         }
 
-        /* Card */
         .login-card {
           width: 100%;
           max-width: 400px;
@@ -98,7 +97,6 @@ const response = await fetch(
           text-align: center;
         }
 
-        /* Title & subtitle */
         .login-title {
           margin-bottom: 5px;
           font-size: 1.8rem;
@@ -111,7 +109,6 @@ const response = await fetch(
           color: #6b7280;
         }
 
-        /* Inputs */
         .form-control {
           width: 100%;
           padding: 12px 15px;
@@ -128,7 +125,6 @@ const response = await fetch(
           outline: none;
         }
 
-        /* Button */
         .btn-login {
           width: 100%;
           padding: 12px;
@@ -155,7 +151,6 @@ const response = await fetch(
           transform: translateY(-2px);
         }
 
-        /* Spinner */
         .spinner {
           width: 20px;
           height: 20px;
@@ -170,7 +165,6 @@ const response = await fetch(
           100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
           .login-card {
             padding: 30px 20px;
@@ -185,5 +179,3 @@ const response = await fetch(
 }
 
 export default Login;
-
-
