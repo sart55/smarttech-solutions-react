@@ -27,7 +27,7 @@ const CustomerDetailsPage = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch("https://smarttechsolutions-backend.onrender.com/projects", {
+      const response = await fetch("https://smarttechsolutions-springboot.onrender.com/projects", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -163,5 +163,6 @@ const CustomerDetailsPage = () => {
     </div>
   );
 };
+
 
 export default CustomerDetailsPage;
