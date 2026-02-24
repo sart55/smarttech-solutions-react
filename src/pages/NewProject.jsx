@@ -263,7 +263,7 @@ const NewProject = () => {
 
     try {
       const response = await fetch(
-        `https://https://smarttechsolutions-springboot.onrender.com/projects/${id}/close`,
+        `https://smarttechsolutions-springboot.onrender.com/projects/${id}/close`,
         {
           method: "PUT",
           headers: {
@@ -694,6 +694,7 @@ const NewProject = () => {
 };
 
 export default NewProject;
+
 
 
 
