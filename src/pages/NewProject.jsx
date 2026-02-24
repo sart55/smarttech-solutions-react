@@ -114,7 +114,7 @@ const NewProject = () => {
   const fetchQuotationHistory = async () => {
     try {
       const response = await fetch(
-        `https://smarttechsolutions-springboot.onrender.com/project/${id}`,
+        "https://smarttechsolutions-springboot.onrender.com/project/${id}",
         {
           method: "GET",
           headers: {
@@ -694,6 +694,7 @@ const NewProject = () => {
 };
 
 export default NewProject;
+
 
 
 
