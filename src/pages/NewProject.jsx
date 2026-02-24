@@ -40,7 +40,7 @@ const NewProject = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetch(`https://smarttechsolutions-backend.onrender.com/projects/${id}`, {
+        const response = await fetch(`https://smarttechsolutions-springboot.onrender.com/projects/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -65,7 +65,7 @@ const NewProject = () => {
 
   const saveCustomerDetails = async () => {
     try {
-      const response = await fetch(`https://smarttechsolutions-backend.onrender.com/projects/${id}`, {
+      const response = await fetch(`https://smarttechsolutions-springboot.onrender.com/projects/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +94,7 @@ const NewProject = () => {
     const fetchComponents = async () => {
       try {
         setLoadingComponents(true);
-        const response = await fetch("https://smarttechsolutions-backend.onrender.com/components", {
+        const response = await fetch("https://smarttechsolutions-springboot.onrender.com/components", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -114,7 +114,7 @@ const NewProject = () => {
   const fetchQuotationHistory = async () => {
     try {
       const response = await fetch(
-        `https://smarttechsolutions-backend.onrender.com/project/${id}`,
+        `https://smarttechsolutions-springboot.onrender.com/project/${id}`,
         {
           method: "GET",
           headers: {
@@ -221,7 +221,7 @@ const NewProject = () => {
     try {
       setSavingQuotation(true);
 
-      await fetch(`https://smarttechsolutions-backend.onrender.com/quotations/project/${id}`, {
+      await fetch(`https://smarttechsolutions-springboot.onrender.com/quotations/project/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +263,7 @@ const NewProject = () => {
 
     try {
       const response = await fetch(
-        `https://smarttechsolutions-backend.onrender.com/projects/${id}/close`,
+        `https://https://smarttechsolutions-springboot.onrender.com/projects/${id}/close`,
         {
           method: "PUT",
           headers: {
@@ -694,6 +694,7 @@ const NewProject = () => {
 };
 
 export default NewProject;
+
 
 
 
