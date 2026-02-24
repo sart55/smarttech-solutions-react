@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://smarttechsolutions-backend.onrender.com",
+  baseURL: "https://smarttechsolutions-springboot.onrender.com",
 });
 
 // Automatically attach JWT token
