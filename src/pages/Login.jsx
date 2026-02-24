@@ -82,7 +82,7 @@ function Login() {
           display: flex;
           justify-content: center;
           align-items: center;
-          background: linear-gradient(135deg, #4f46e5, #3b82f6);
+          background: linear-gradient(135deg, #a3a0da, #3b82f6);
           padding: 20px;
         }
 
@@ -184,3 +184,4 @@ function Login() {
 }
 
 export default Login;
+
