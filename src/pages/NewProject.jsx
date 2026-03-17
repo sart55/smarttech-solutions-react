@@ -266,7 +266,7 @@ setQuotationHistory(res.data);
 
   const canEditCustomer = quotationHistory.length === 0;
 
-  return (
+  return ({ token && (
     <div className="container-fluid py-3 px-2 px-md-4 pb-5">
       {/* ================= CUSTOMER section*/}
       <div className="row g-3">
@@ -283,7 +283,7 @@ setQuotationHistory(res.data);
             username={localStorage.getItem("username")}
           />
         </div>
-      </div>
+      </div> )}
 
       {/* ================= CREATE + HISTORY ================= */}
       <div className="row g-4">
