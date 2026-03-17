@@ -14,6 +14,7 @@ const PaymentForm = ({ projectId, username, token }) => {
 
   // Fetch payments + summary
   useEffect(() => {
+    if (!token) return; 
     const fetchPayments = async () => {
       try {
         const res = await api.get(`/payments/project/${projectId}`, {
