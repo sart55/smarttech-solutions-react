@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import api from "../api/axios";
 
 const CustomerDetails = ({ projectId, token }) => {
   const [project, setProject] = useState(null);
@@ -8,31 +9,27 @@ const CustomerDetails = ({ projectId, token }) => {
   const [updateMessage, setUpdateMessage] = useState("");
 
   /* ================= FETCH PROJECT ================= */
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/projects/${projectId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+useEffect(() => {
+  const fetchProject = async () => {
+    try {
+      const res = await api.get(`/projects/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!response.ok) {
-          alert("Project not found");
-          return;
-        }
+      setProject(res.data);
+      setEditedProject(res.data);
 
-        const data = await response.json();
-        setProject(data);
-        setEditedProject(data);
-      } catch (error) {
-        console.error("Error fetching project:", error);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+
+      if (error.response && error.response.status === 404) {
+        alert("Project not found");
       }
-    };
+    }
+  };
 
-    fetchProject();
-  }, [projectId, token]);
+  fetchProject();
+}, [projectId, token]);
 
   const saveCustomerDetails = async () => {
     try {
