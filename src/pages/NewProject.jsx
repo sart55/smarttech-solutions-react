@@ -1,8 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-
+import CommentSection from "../components/Commentsection";
 import PaymentForm from "../components/PaymentForm";
-import CommentSection from "../components/CommentSection";
+import CustomerDetails from "../components/CustomerDetails";
+import QuotationHistory from "../components/QuotationHistory";
+import api from "../api/axios";
 
 const NewProject = () => {
   const { id } = useParams();
@@ -32,26 +34,20 @@ const NewProject = () => {
   const dropdownRef = useRef(null);
 
   // 🔥 NEW STATES FOR EDIT CUSTOMER
-  const [editingCustomer, setEditingCustomer] = useState(false);
+  // const [editingCustomer, setEditingCustomer] = useState(false);
   const [editedProject, setEditedProject] = useState(null);
-  const [updateMessage, setUpdateMessage] = useState("");
+  // const [updateMessage, setUpdateMessage] = useState("");
 
   /* ================= FETCH PROJECT ================= */
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetch(`https://smarttechsolutions-springboot.onrender.com/projects/${id}`, {
+        const res = await api.get(`/projects/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!response.ok) {
-          alert("Project not found");
-          return;
-        }
-
-        const data = await response.json();
-        setProject(data);
-        setEditedProject(data); // 🔥 add this line
+        
+        setProject(res.data);
+        setEditedProject(res.data); // 🔥 add this line
       } catch (error) {
         console.error("Error fetching project:", error);
       }
@@ -65,18 +61,13 @@ const NewProject = () => {
 
   const saveCustomerDetails = async () => {
     try {
-      const response = await fetch(`https://smarttechsolutions-springboot.onrender.com/projects/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(editedProject),
-      });
+      const res = await api.put(`/projects/${id}`, editedProject, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
-      if (!response.ok) return;
-
-      const updated = await response.json();
+const updated = res.data;
       setProject(updated);
       setEditedProject(updated);
       setEditingCustomer(false);
@@ -94,12 +85,11 @@ const NewProject = () => {
     const fetchComponents = async () => {
       try {
         setLoadingComponents(true);
-        const response = await fetch("https://smarttechsolutions-springboot.onrender.com/components", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+       const res = await api.get("/components", {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-        const data = await response.json();
-        setAllComponents(data);
+setAllComponents(res.data);
       } catch (error) {
         console.error("Error fetching components");
       } finally {
@@ -113,24 +103,13 @@ const NewProject = () => {
   /* ================= FETCH QUOTATION HISTORY ================= */
   const fetchQuotationHistory = async () => {
     try {
-      const response = await fetch(
-        "https://smarttechsolutions-springboot.onrender.com/projects/${id}",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // <--- must be valid JWT
-          },
-          credentials: "include", // <--- ensures browser sends credentials for CORS
-        },
-      );
+      const res = await api.get(`/quotations/project/${id}`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setQuotationHistory(data);
+setQuotationHistory(res.data);
     } catch (error) {
       console.error("Error loading quotation history:", error);
     }
@@ -221,24 +200,24 @@ const NewProject = () => {
     try {
       setSavingQuotation(true);
 
-      await fetch(`https://smarttechsolutions-springboot.onrender.com/quotations/project/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          items: components.map((c) => ({
-            componentName: c.name,
-            quantity: c.quantity,
-            price: c.price,
-          })),
-          setupCharges,
-          devCharges,
-          totalAmount: grandTotal,
-        }),
-      });
+      await api.post(
+  `/quotations/project/${id}`,
+  {
+    items: components.map((c) => ({
+      componentName: c.name,
+      quantity: c.quantity,
+      price: c.price,
+    })),
+    setupCharges,
+    devCharges,
+    totalAmount: grandTotal,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
       alert("Quotation saved successfully!");
       setComponents([]);
@@ -262,22 +241,15 @@ const NewProject = () => {
     if (!confirmClose) return;
 
     try {
-      const response = await fetch(
-        `https://smarttechsolutions-springboot.onrender.com/projects/${id}/close`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        alert("Failed to close project");
-        return;
-      }
-
+      await api.put(
+  `/projects/${id}/close`,
+  {},
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
       alert("Project closed successfully!");
 
       // 🔥 Redirect to read-only page
@@ -296,156 +268,22 @@ const NewProject = () => {
 
   return (
     <div className="container-fluid py-3 px-2 px-md-4 pb-5">
-      {/* ================= CUSTOMER + PAYMENT ================= */}
-      <div className="card p-4 mb-4 shadow-sm">
-        <div className="row">
-          <div className="col-md-8 mb-3">
-            <h4>Customer Details</h4>
+      {/* ================= CUSTOMER section*/}
+      <div className="row g-3">
+        {/* Customer Details */}
+        <div className="col-md-8">
+          <CustomerDetails projectId={id} token={token} />
+        </div>
 
-            {updateMessage && (
-              <div className="alert alert-success py-2">{updateMessage}</div>
-            )}
-
-            {editingCustomer ? (
-              <>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">
-                      Project Name
-                    </label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.projectName || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          projectName: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">
-                      Customer Name
-                    </label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.customerName || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          customerName: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">Contact</label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.customerContact || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          customerContact: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">Email</label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.customerEmail || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          customerEmail: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">College</label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.customerCollege || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          customerCollege: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold">Branch</label>
-                    <input
-                      className="form-control form-control-sm"
-                      value={editedProject.customerBranch || ""}
-                      onChange={(e) =>
-                        setEditedProject({
-                          ...editedProject,
-                          customerBranch: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={saveCustomerDetails}
-                >
-                  Save
-                </button>
-              </>
-            ) : (
-              <>
-                <p>
-                  <strong>Project Name:</strong> {project.projectName}
-                </p>
-                <p>
-                  <strong>Customer Name:</strong> {project.customerName}
-                </p>
-                <p>
-                  <strong>Contact:</strong> {project.customerContact}
-                </p>
-                <p>
-                  <strong>Email:</strong> {project.customerEmail}
-                </p>
-                <p>
-                  <strong>College:</strong> {project.customerCollege}
-                </p>
-                <p>
-                  <strong>Branch:</strong> {project.customerBranch}
-                </p>
-
-                {canEditCustomer && (
-                  <button
-                    className="btn btn-primary mt-2"
-                    onClick={() => setEditingCustomer(true)}
-                  >
-                    Edit Customer Details
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Payment Form */}
-
+        {/* Payment Form */}
+        <div className="col-md-4">
           <PaymentForm
             projectId={id}
             username={localStorage.getItem("username")}
           />
         </div>
       </div>
+
       {/* ================= CREATE + HISTORY ================= */}
       <div className="row g-4">
         {/* CREATE QUOTATION */}
@@ -644,61 +482,10 @@ const NewProject = () => {
           </div>
         </div>
 
-        {/* HISTORY */}
-        <div className="col-12 col-xl-4">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h5 className="fw-bold mb-3">Quotation History</h5>
-
-              {quotationHistory.length === 0 ? (
-                <p className="text-muted small">No quotations yet.</p>
-              ) : (
-                quotationHistory.map((q) => (
-                  <div
-                    key={q.id}
-                    className="card mb-3 bg-light border-0 shadow-sm"
-                  >
-                    <div className="card-body small">
-                      <div className="text-muted mb-2">
-                        {q.createdAt
-                          ? new Date(q.createdAt).toLocaleString()
-                          : "Not available"}
-                      </div>
-
-                      {q.items?.length > 0 && (
-                        <ul className="ps-3">
-                          {q.items.map((item) => (
-                            <li key={item.id}>
-                              {item.componentName} — Qty: {item.quantity}, ₹
-                              {item.price}, Subtotal: ₹{item.subtotal}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      <div>Setup Charges: ₹{q.setupCharges || 0}</div>
-                      <div>Development Charges: ₹{q.devCharges || 0}</div>
-                      <div className="fw-bold">
-                        Grand Total: ₹{q.totalAmount}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        <QuotationHistory projectId={id} token={token} />
       </div>
     </div>
   );
 };
 
 export default NewProject;
-
-
-
-
-
-
-
-
