@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import CommentSection from "../components/CommentSection";
+import CommentSection from "../components/Commentsection";
 import PaymentForm from "../components/PaymentForm";
 import CustomerDetails from "../components/CustomerDetails";
 import QuotationHistory from "../components/QuotationHistory";
@@ -279,6 +279,7 @@ setQuotationHistory(res.data);
         <div className="col-md-4">
           <PaymentForm
             projectId={id}
+            token={token}
             username={localStorage.getItem("username")}
           />
         </div>
