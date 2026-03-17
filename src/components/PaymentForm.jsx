@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 import PropTypes from "prop-types";
 
-const PaymentForm = ({ projectId, username }) => {
+const PaymentForm = ({ projectId, username, token }) => {
   const [amount, setAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState("Cash");
   const [paymentsList, setPaymentsList] = useState([]);
@@ -10,7 +10,7 @@ const PaymentForm = ({ projectId, username }) => {
   const [totalAmount, setTotalAmount] = useState(null);
   const [totalInput, setTotalInput] = useState("");
 
-  const token = localStorage.getItem("token");
+  
 
   // Fetch payments + summary
   useEffect(() => {
