@@ -10,11 +10,8 @@ const PaymentForm = ({ projectId, username, token }) => {
   const [totalAmount, setTotalAmount] = useState(null);
   const [totalInput, setTotalInput] = useState("");
 
-  
-
   // Fetch payments + summary
   useEffect(() => {
-    if (!token) return; 
     const fetchPayments = async () => {
       try {
         const res = await api.get(`/payments/project/${projectId}`, {
@@ -55,7 +52,7 @@ const PaymentForm = ({ projectId, username, token }) => {
         { totalAmount: Number(totalInput) },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       setTotalAmount(res.data.totalAmount);
@@ -85,7 +82,7 @@ const PaymentForm = ({ projectId, username, token }) => {
         paymentData,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       setPaymentsList([res.data, ...paymentsList]);
@@ -105,7 +102,7 @@ const PaymentForm = ({ projectId, username, token }) => {
   const isTotalSet = totalAmount && totalAmount > 0;
 
   return (
-     <div className="card p-4 mb-4 shadow-sm">
+    <div className="card p-4 mb-4 shadow-sm">
       <h5>Payments</h5>
 
       {/* TOTAL AMOUNT INPUT */}
@@ -131,12 +128,10 @@ const PaymentForm = ({ projectId, username, token }) => {
 
       {/* TOTAL + REMAINING */}
       {isTotalSet && (
-        <div className="card p-3 mb-3 bg-light">
-          <div className="fw-semibold">
-            Total Amount: ₹{totalAmount}
-          </div>
+        <div className="card p-3 mb-3 bg-light border-0 shadow-sm">
+          <div className="fw-semibold">Total Amount: ₹{totalAmount}</div>
 
-          <div className="text-success">
+          <div className="text-success fw-bold">
             Remaining Amount: ₹{remainingAmount}
           </div>
         </div>
@@ -191,15 +186,15 @@ const PaymentForm = ({ projectId, username, token }) => {
             {paymentsList.map((p) => (
               <li
                 key={p.id}
-                className="list-group-item d-flex justify-content-between align-items-start flex-column"
+                className="list-group-item d-flex justify-content-between align-items-center"
               >
-                <div className="fw-semibold">
-                  ₹{p.amount} — {p.mode}
+                <div>
+                  <div className="fw-semibold">₹{p.amount}</div>
+                  <small className="text-muted">{p.mode}</small>
                 </div>
 
-                <small className="text-muted">
-                  {new Date(p.createdAt).toLocaleString()} by{" "}
-                  {p.username || "You"}
+                <small className="text-muted text-end">
+                  {new Date(p.createdAt).toLocaleString()}
                 </small>
               </li>
             ))}
