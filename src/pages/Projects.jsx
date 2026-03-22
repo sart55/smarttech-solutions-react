@@ -4,39 +4,32 @@ import { useNavigate } from "react-router-dom";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showNoQuotation, setShowNoQuotation] = useState(false);
-  const navigate = useNavigate();
   const ITEMS_PER_PAGE = 6;
+
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const [openPage, setOpenPage] = useState(1);
   const [closedPage, setClosedPage] = useState(1);
   const [noQuotationPage, setNoQuotationPage] = useState(1);
 
+  const [activeTab, setActiveTab] = useState("open");
+
+  // Reset pagination when data/search/tab changes
   useEffect(() => {
     setOpenPage(1);
     setClosedPage(1);
     setNoQuotationPage(1);
-  }, [search, showNoQuotation, projects.length]);
+  }, [search, activeTab, projects.length]);
 
+  // Fetch Projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const res = await api.get("/projects");
-        const projectsData = res.data;
-
-        // Fetch quotation count for each project
-        const projectsWithQuotations = await Promise.all(
-          projectsData.map(async (p) => {
-            const qRes = await api.get(`/quotations/project/${p.id}`);
-            const quotations = qRes.data || [];
-            return { ...p, quotations };
-          }),
-        );
-
-        setProjects(projectsWithQuotations);
+        setProjects(res.data);
       } catch (err) {
         setError("Failed to load projects");
       } finally {
@@ -52,33 +45,31 @@ const Projects = () => {
     return data.slice(start, start + ITEMS_PER_PAGE);
   };
 
-  // 🔍 Search Filter
   const filtered = projects.filter((p) =>
-    p.projectName?.toLowerCase().includes(search.toLowerCase()),
+    p.projectName?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 🧾 Projects WITH quotation
-  const projectsWithQuotation = filtered.filter(
-    (p) => p.quotationCreated === true,
+  const normalizeStatus = (status) => status?.toUpperCase();
+
+  const closedProjects = filtered.filter(
+    (p) => normalizeStatus(p.status) === "CLOSED"
   );
 
-  // 🧾 Projects WITHOUT quotation (ONLY if OPEN)
+  const openProjects = filtered.filter(
+    (p) =>
+      normalizeStatus(p.status) === "OPEN" && p.quotationCreated === true
+  );
+
   const projectsWithoutQuotation = filtered.filter(
-    (p) => !p.quotationCreated && p.status === "OPEN",
-  );
-
-  // 📂 Status separation
-  const openProjects = projectsWithQuotation.filter((p) => p.status === "OPEN");
-
-  const closedProjects = projectsWithQuotation.filter(
-    (p) => p.status === "CLOSED",
+    (p) =>
+      normalizeStatus(p.status) === "OPEN" && p.quotationCreated === false
   );
 
   const paginatedOpen = paginate(openProjects, openPage);
   const paginatedClosed = paginate(closedProjects, closedPage);
   const paginatedNoQuotation = paginate(
     projectsWithoutQuotation,
-    noQuotationPage,
+    noQuotationPage
   );
 
   if (loading) {
@@ -95,237 +86,259 @@ const Projects = () => {
     );
   }
 
-return (
-  <div className="container-fluid py-3 px-2 px-md-4">
+  return (
+    <div
+      className="container-fluid px-2 px-md-4"
+      style={{
+        height: "100%", // ✅ use full available height
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* INNER WRAPPER */}
+      <div
+        style={{
+          padding: "12px",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", // ✅ prevent page scroll
+        }}
+      >
+        {/* HEADER */}
+        <div className="card shadow-sm border-0 mb-3 p-3">
+          <div className="row align-items-center g-3">
+            <div className="col-12 col-lg-4">
+              <h4 className="fw-bold mb-0 text-center text-lg-start">
+                All Projects
+              </h4>
+            </div>
 
-    {/* ================= HEADER ================= */}
-    <div className="card shadow-sm border-0 mb-4 p-3 p-md-4">
-      <div className="row align-items-center g-3">
+            <div className="col-12 col-lg-4">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by project name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-        {/* Title */}
-        <div className="col-12 col-lg-3">
-          <h4 className="fw-bold mb-0 text-center text-lg-start">
-            All Projects
-          </h4>
-        </div>
-
-        {/* Search */}
-        <div className="col-12 col-lg-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search by project name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Badges + Toggle */}
-        <div className="col-12 col-lg-6">
-          <div className="d-flex flex-wrap justify-content-center justify-content-lg-end align-items-center gap-2">
-
-            <span className="badge bg-primary px-3 py-2">
-              Open: {openProjects.length}
-            </span>
-
-            <span className="badge bg-danger px-3 py-2">
-              Closed: {closedProjects.length}
-            </span>
-
-            <span className="badge bg-warning text-dark px-3 py-2">
-              No Quotation: {projectsWithoutQuotation.length}
-            </span>
-
-            <button
-              className="btn btn-outline-warning btn-sm"
-              onClick={() => setShowNoQuotation(!showNoQuotation)}
-            >
-              {showNoQuotation
-                ? "Show Normal Projects"
-                : "Show Projects Without Quotation"}
-            </button>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    {/* ================= SHOW PROJECTS WITHOUT QUOTATION ================= */}
-    {showNoQuotation ? (
-      <div>
-        <h5 className="border-bottom border-warning pb-2 mb-3 fw-semibold">
-          Projects Without Quotation
-        </h5>
-
-        {projectsWithoutQuotation.length === 0 && (
-          <p className="text-muted">No projects without quotation found</p>
-        )}
-
-        {paginatedNoQuotation.map((p) => (
-          <div
-            key={p.id}
-            className="card mb-3 shadow-sm border-warning project-card"
-            onClick={() => navigate(`/NewProject/${p.id}`)}
-          >
-            <div className="card-body fw-semibold small">
-              {p.projectName} — {p.customerContact}
+            <div className="col-12 col-lg-4 text-center text-lg-end">
+              <span className="badge bg-primary me-2">
+                Open: {openProjects.length}
+              </span>
+              <span className="badge bg-danger me-2">
+                Closed: {closedProjects.length}
+              </span>
+              <span className="badge bg-warning text-dark">
+                No Quotation: {projectsWithoutQuotation.length}
+              </span>
             </div>
           </div>
-        ))}
+        </div>
 
-        {/* Pagination */}
-        {projectsWithoutQuotation.length > ITEMS_PER_PAGE && (
-          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-3">
-            <button
-              className="btn btn-outline-warning btn-sm w-100 w-md-auto"
-              disabled={noQuotationPage === 1}
-              onClick={() => setNoQuotationPage(noQuotationPage - 1)}
-            >
-              Prev
-            </button>
+        {/* TABS CARD */}
+        <div className="card shadow-sm border-0 flex-grow-1 d-flex flex-column">
+          <div className="border-bottom">
+            <ul className="nav nav-tabs flex-nowrap overflow-auto px-2 p-2">
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${
+                    activeTab === "open" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("open")}
+                >
+                  Open Projects
+                </button>
+              </li>
 
-            <span className="fw-semibold small">
-              Page {noQuotationPage}
-            </span>
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${
+                    activeTab === "closed" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("closed")}
+                >
+                  Closed Projects
+                </button>
+              </li>
 
-            <button
-              className="btn btn-outline-warning btn-sm w-100 w-md-auto"
-              disabled={
-                noQuotationPage * ITEMS_PER_PAGE >=
-                projectsWithoutQuotation.length
-              }
-              onClick={() => setNoQuotationPage(noQuotationPage + 1)}
-            >
-              Next
-            </button>
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${
+                    activeTab === "noQuotation" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("noQuotation")}
+                >
+                  No Quotation
+                </button>
+              </li>
+            </ul>
           </div>
-        )}
-      </div>
-    ) : (
 
-      /* ================= NORMAL PROJECT VIEW ================= */
-      <div className="row g-4">
+          {/* SCROLL ONLY HERE */}
+          <div
+            className="card-body"
+            style={{
+              overflowY: "auto", // ✅ only this scrolls
+              flex: 1,
+            }}
+          >
+            {/* OPEN */}
+            {activeTab === "open" && (
+              <>
+                {openProjects.length === 0 ? (
+                  <p className="text-muted small">
+                    No open projects found
+                  </p>
+                ) : (
+                  paginatedOpen.map((p) => (
+                    <div
+                      key={p.id}
+                      className="card mb-2 shadow-sm project-card"
+                      onClick={() => navigate(`/NewProject/${p.id}`)}
+                    >
+                      <div className="card-body fw-semibold small">
+                        {p.projectName} — {p.customerContact}
+                      </div>
+                    </div>
+                  ))
+                )}
 
-        {/* OPEN PROJECTS */}
-        <div className="col-12 col-lg-6">
-          <div className="card shadow-sm border-0 p-3 p-md-4 h-100">
-            <h5 className="border-bottom border-primary pb-2 mb-3 fw-semibold">
-              Open Projects
-            </h5>
-
-            {openProjects.length === 0 && (
-              <p className="text-muted small">No open projects found</p>
+                {openProjects.length > ITEMS_PER_PAGE && (
+                  <div className="mt-3">
+                    <Pagination
+                      page={openPage}
+                      setPage={setOpenPage}
+                      total={openProjects.length}
+                      ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
-            {paginatedOpen.map((p) => (
-              <div
-                key={p.id}
-                className="card mb-3 shadow-sm project-card"
-                onClick={() => navigate(`/NewProject/${p.id}`)}
-              >
-                <div className="card-body fw-semibold small">
-                  {p.projectName} — {p.customerContact}
-                </div>
-              </div>
-            ))}
+            {/* CLOSED */}
+            {activeTab === "closed" && (
+              <>
+                {closedProjects.length === 0 ? (
+                  <p className="text-muted small">
+                    No closed projects found
+                  </p>
+                ) : (
+                  paginatedClosed.map((p) => (
+                    <div
+                      key={p.id}
+                      className="card mb-2 shadow-sm project-card"
+                      onClick={() => navigate(`/closed-project/${p.id}`)}
+                    >
+                      <div className="card-body fw-semibold small">
+                        {p.projectName} — {p.customerContact}
+                      </div>
+                    </div>
+                  ))
+                )}
 
-            {openProjects.length > ITEMS_PER_PAGE && (
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-3">
-                <button
-                  className="btn btn-outline-primary btn-sm w-100 w-md-auto"
-                  disabled={openPage === 1}
-                  onClick={() => setOpenPage(openPage - 1)}
-                >
-                  Prev
-                </button>
+                {closedProjects.length > ITEMS_PER_PAGE && (
+                  <div className="mt-3">
+                    <Pagination
+                      page={closedPage}
+                      setPage={setClosedPage}
+                      total={closedProjects.length}
+                      ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                    />
+                  </div>
+                )}
+              </>
+            )}
 
-                <span className="fw-semibold small">
-                  Page {openPage}
-                </span>
+            {/* NO QUOTATION */}
+            {activeTab === "noQuotation" && (
+              <>
+                {projectsWithoutQuotation.length === 0 ? (
+                  <p className="text-muted small">
+                    No projects without quotation found
+                  </p>
+                ) : (
+                  paginatedNoQuotation.map((p) => (
+                    <div
+                      key={p.id}
+                      className="card mb-2 shadow-sm project-card"
+                      onClick={() => navigate(`/NewProject/${p.id}`)}
+                    >
+                      <div className="card-body fw-semibold small">
+                        {p.projectName} — {p.customerContact}
+                      </div>
+                    </div>
+                  ))
+                )}
 
-                <button
-                  className="btn btn-outline-primary btn-sm w-100 w-md-auto"
-                  disabled={openPage * ITEMS_PER_PAGE >= openProjects.length}
-                  onClick={() => setOpenPage(openPage + 1)}
-                >
-                  Next
-                </button>
-              </div>
+                {projectsWithoutQuotation.length > ITEMS_PER_PAGE && (
+                  <div className="mt-3">
+                    <Pagination
+                      page={noQuotationPage}
+                      setPage={setNoQuotationPage}
+                      total={projectsWithoutQuotation.length}
+                      ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
-
-        {/* CLOSED PROJECTS */}
-        <div className="col-12 col-lg-6">
-          <div className="card shadow-sm border-0 p-3 p-md-4 h-100">
-            <h5 className="border-bottom border-danger pb-2 mb-3 fw-semibold">
-              Closed Projects
-            </h5>
-
-            {closedProjects.length === 0 && (
-              <p className="text-muted small">No closed projects found</p>
-            )}
-
-            {paginatedClosed.map((p) => (
-              <div
-                key={p.id}
-                className="card mb-3 shadow-sm project-card"
-                onClick={() => navigate(`/closed-project/${p.id}`)}
-              >
-                <div className="card-body fw-semibold small">
-                  {p.projectName} — {p.customerContact}
-                </div>
-              </div>
-            ))}
-
-            {closedProjects.length > ITEMS_PER_PAGE && (
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-3">
-                <button
-                  className="btn btn-outline-danger btn-sm w-100 w-md-auto"
-                  disabled={closedPage === 1}
-                  onClick={() => setClosedPage(closedPage - 1)}
-                >
-                  Prev
-                </button>
-
-                <span className="fw-semibold small">
-                  Page {closedPage}
-                </span>
-
-                <button
-                  className="btn btn-outline-danger btn-sm w-100 w-md-auto"
-                  disabled={
-                    closedPage * ITEMS_PER_PAGE >= closedProjects.length
-                  }
-                  onClick={() => setClosedPage(closedPage + 1)}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
       </div>
-    )}
 
-    {/* Extra Styling */}
-    <style>{`
-      .project-card {
-        cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-        border-radius: 10px;
-      }
+      {/* STYLES */}
+      <style>{`
+        .project-card {
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          border-radius: 10px;
+        }
 
-      .project-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      }
-    `}</style>
+        .project-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
 
-  </div>
-);
+        .nav-tabs .nav-link {
+          white-space: nowrap;
+        }
+
+        .nav-tabs .nav-link.active {
+          font-weight: 600;
+          border-bottom: 3px solid #0d6efd;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+/* PAGINATION */
+const Pagination = ({ page, setPage, total, ITEMS_PER_PAGE }) => {
+  return (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <button
+        className="btn btn-outline-secondary btn-sm"
+        disabled={page === 1}
+        onClick={() => setPage(page - 1)}
+      >
+        Prev
+      </button>
+
+      <span className="small fw-semibold">Page {page}</span>
+
+      <button
+        className="btn btn-outline-secondary btn-sm"
+        disabled={page * ITEMS_PER_PAGE >= total}
+        onClick={() => setPage(page + 1)}
+      >
+        Next
+      </button>
+    </div>
+  );
 };
 
 export default Projects;
