@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import AiChat from "../components/AiChat";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -116,9 +117,19 @@ const Layout = ({ children }) => {
         )}
 
         {/* ================= MAIN CONTENT ================= */}
-        <main className="flex-grow-1 p-4 bg-light overflow-auto">
+         <main
+          className="flex-grow-1 overflow-auto bg-light"
+          style={{
+            padding: "8px", // ✅ very small padding
+          }}
+        >
           {children}
         </main>
+
+        <AiChat />
+
+        {/* ✅ GLOBAL AI CHAT */}
+
       </div>
 
       {/* ================= PROFESSIONAL STYLES ================= */}
